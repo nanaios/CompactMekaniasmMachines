@@ -4,8 +4,11 @@ import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.IContentsListener;
 import mekanism.api.RelativeSide;
+import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalTank;
 import mekanism.api.chemical.attribute.ChemicalAttributeValidator;
+import mekanism.api.datamaps.IMekanismDataMapTypes;
+import mekanism.api.fluid.IExtendedFluidTank;
 import mekanism.api.functions.ConstantPredicates;
 import mekanism.api.heat.HeatAPI;
 import mekanism.api.math.MathUtils;
@@ -19,6 +22,7 @@ import mekanism.common.capabilities.holder.fluid.FluidTankHelper;
 import mekanism.common.capabilities.holder.fluid.IFluidTankHolder;
 import mekanism.common.capabilities.holder.heat.HeatCapacitorHelper;
 import mekanism.common.capabilities.holder.heat.IHeatCapacitorHolder;
+import mekanism.common.content.boiler.BoilerMultiblockData;
 import mekanism.common.integration.computer.SpecialComputerMethodWrapper;
 import mekanism.common.integration.computer.annotation.ComputerMethod;
 import mekanism.common.integration.computer.annotation.WrappingComputerMethod;
@@ -45,6 +49,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.fluids.IFluidTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.CompactMekanismMachines.common.registries.CompactBlocks;
@@ -62,7 +67,7 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
     @WrappingComputerMethod(wrapper = SpecialComputerMethodWrapper.ComputerChemicalTankWrapper.class, methodNames = {"getFuel", "getFuelCapacity", "getFuelNeeded", "getFuelFilledPercentage"}, docPlaceholder = "fuel tank")
     public IChemicalTank fuelTank;
     public IChemicalTank coolantGasTank;
-    public IChemicalTank coolantFluidTank;
+    public IExtendedFluidTank coolantFluidTank;
     public IChemicalTank heatedCoolantTank;
     public IChemicalTank wasteTank;
     public HeatCapacitor heatCapacitor;
@@ -82,10 +87,9 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
 
     public TileEntityCompactFissionReactor(BlockPos pos, BlockState state) {
         super(CompactBlocks.COMPACT_FISSION_REACTOR, pos, state);
-        biomeAmbientTemp = HeatAPI.getAmbientTemp(this.getLevel(), this.getTilePos());
-        configComponent = new TileComponentConfig(this, TransmissionType.GAS,TransmissionType.FLUID);
+        biomeAmbientTemp = HeatAPI.getAmbientTemp(this.getLevel(), this.getBlockPos());
 
-        ConfigInfo gasConfig = configComponent.getConfig(TransmissionType.GAS);
+        ConfigInfo gasConfig = configComponent.getConfig(TransmissionType.CHEMICAL);
         if (gasConfig !=null){
             gasConfig.addSlotInfo(DataType.INPUT_1, new ChemicalSlotInfo(true,false,fuelTank));
             gasConfig.addSlotInfo(DataType.INPUT_2, new ChemicalSlotInfo(true,false,coolantGasTank));
@@ -117,7 +121,14 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
                 null,
                 listener
         ));
-        builder.addTank(coolantGasTank = new CoolantGasTank(listener));
+        builder.addTank(coolantGasTank = VariableCapacityChemicalTank.create(
+                CompactMekanismMachinesConfig.machines.cfrCoolantGasTankCapacity::get,
+                ConstantPredicates.notExternal(),
+                ConstantPredicates.alwaysTrueBi(),
+                chemical -> chemical.is(MekanismChemicals.STEAM) || BoilerMultiblockData.IS_HEATED_COOLANT.test(chemical),
+                null,
+                listener
+        ));
         builder.addTank(wasteTank = new WasteTank(listener));
         builder.addTank(heatedCoolantTank = new HeatedCoolantTank(listener));
         return builder.build();
@@ -205,8 +216,7 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
             long newWaste = (long) Math.floor(partialWaste);
             if (newWaste>0){
                 partialWaste %= 1;
-                GasStack wasteToAdd = MekanismGases.NUCLEAR_WASTE.getStack(newWaste);
-
+                ChemicalStack wasteToAdd = MekanismChemicals.NUCLEAR_WASTE.asStack(newWaste);
                 wasteTank.insert(wasteToAdd, Action.EXECUTE, AutomationType.INTERNAL);
             }
             burnTicks = total % maxBurnTicks;
@@ -223,11 +233,11 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
     private void reset() {
         burnTicks = 0;
         maxBurnTicks = 0;
-        generationRate = FloatingLong.ZERO;
+        generationRate = 0;
     }
 
     private long getToUse() {
-        if (generationRate.isZero() || fuelTank.isEmpty()) {
+        if (generationRate == 0 || fuelTank.isEmpty()) {
             return 0;
         }
         long max = (long) Math.ceil(CompactMekanismMachinesConfig.machines.cfrBurnRate.get() * (fuelTank.getStored() / (double) fuelTank.getCapacity()));
@@ -244,7 +254,8 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
         }
         return heatedLong;
     }
-    public FloatingLong getGenerationRate() {
+
+    public long getGenerationRate() {
         return generationRate;
     }
 
@@ -277,29 +288,6 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
 
     //Methods relating to IComputerTile
     //End methods IComputerTile
-
-    private class CoolantGasTank extends VariableCapacityGasTank{
-        protected  CoolantGasTank(@Nullable IContentsListener listener){
-            super(CompactMekanismMachinesConfig.machines.cfrCoolantGasTankCapacity,ChemicalTankBuilder.GAS.notExternal,ChemicalTankBuilder.GAS.alwaysTrueBi,
-                    gas -> gas.has(CooledCoolant.class),null,listener);
-        }
-        @Override
-        public void setStack(@NotNull GasStack stack) {
-            boolean wasEmpty = isEmpty();
-            super.setStack(stack);
-            recheckOutput(stack, wasEmpty);
-        }
-
-        @Override
-        public void setStackUnchecked(@NotNull GasStack stack) {
-            boolean wasEmpty = isEmpty();
-            super.setStackUnchecked(stack);
-            recheckOutput(stack, wasEmpty);
-        }
-
-        private void recheckOutput(@NotNull GasStack stack, boolean wasEmpty) {
-        }
-    }
 
     private  class HeatedCoolantTank extends VariableCapacityGasTank {
         protected HeatedCoolantTank(@Nullable IContentsListener listener){

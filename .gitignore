@@ -2,7 +2,7 @@
 *.class
 
 # buildファイルらしきもの
-
+.idea
 
 # Log file
 *.log

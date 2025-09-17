@@ -33,6 +33,7 @@ import mekanism.common.inventory.container.sync.SyncableDouble;
 import mekanism.common.inventory.container.sync.SyncableFloatingLong;
 import mekanism.common.inventory.container.sync.SyncableInt;
 import mekanism.common.inventory.slot.EnergyInventorySlot;
+import mekanism.common.inventory.slot.chemical.ChemicalInventorySlot;
 import mekanism.common.inventory.slot.chemical.GasInventorySlot;
 import mekanism.common.lib.transmitter.TransmissionType;
 import mekanism.common.registries.MekanismGases;
@@ -54,6 +55,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.CompactMekanismMachines.common.registries.CompactBlocks;
@@ -76,7 +78,7 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
     public HeatTank heatCapacitor;
     private long burnTicks;
     private int maxBurnTicks;
-    private FloatingLong generationRate = FloatingLong.ZERO;
+    private long generationRate = 0L;
     private double biomeAmbientTemp;
     private double gasUsedLastTick;
     public  double partialWaste;
@@ -86,7 +88,7 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
     private static final double waterConductivity = 0.5;
     private ConfigInfo gasConfig;
     @WrappingComputerMethod(wrapper = SpecialComputerMethodWrapper.ComputerIInventorySlotWrapper.class, methodNames = "getFuelItem", docPlaceholder = "fuel item slot")
-    GasInventorySlot fuelSlot;
+    ChemicalInventorySlot fuelSlot;
     @WrappingComputerMethod(wrapper = SpecialComputerMethodWrapper.ComputerIInventorySlotWrapper.class, methodNames = "getEnergyItem", docPlaceholder = "energy item slot")
     EnergyInventorySlot energySlot;
 

@@ -1,9 +1,6 @@
 package com.CompactMekanismMachines.common.registries;
 
 //import appeng.core.AppEng;
-import mekanism.common.Mekanism;
-import mekanism.common.registration.impl.RecipeSerializerDeferredRegister;
-import mekanism.common.registration.impl.RecipeSerializerRegistryObject;
 
 public class CompactRecipeSerializers {
     private CompactRecipeSerializers(){};

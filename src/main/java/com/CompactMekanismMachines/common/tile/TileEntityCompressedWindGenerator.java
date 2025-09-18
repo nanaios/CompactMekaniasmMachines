@@ -4,7 +4,7 @@ import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.IContentsListener;
 import mekanism.api.RelativeSide;
-import mekanism.api.math.FloatingLong;
+import mekanism.api.math.long;
 import mekanism.common.block.prefab.BlockTile;
 import mekanism.common.capabilities.holder.slot.IInventorySlotHolder;
 import mekanism.common.capabilities.holder.slot.InventorySlotHelper;
@@ -13,7 +13,7 @@ import mekanism.common.integration.computer.annotation.ComputerMethod;
 import mekanism.common.integration.computer.annotation.WrappingComputerMethod;
 import mekanism.common.inventory.container.MekanismContainer;
 import mekanism.common.inventory.container.sync.SyncableBoolean;
-import mekanism.common.inventory.container.sync.SyncableFloatingLong;
+import mekanism.common.inventory.container.sync.Syncablelong;
 import mekanism.common.inventory.slot.EnergyInventorySlot;
 import mekanism.common.registration.impl.BlockRegistryObject;
 import mekanism.common.tile.interfaces.IBoundingBlock;
@@ -36,14 +36,14 @@ public abstract class TileEntityCompressedWindGenerator<TILE extends TileEntityC
     private final Long multiply;
 
     private double angle;
-    private FloatingLong currentMultiplier = FloatingLong.ZERO;
+    private long currentMultiplier = 0L;
     private boolean isBlacklistDimension;
     @WrappingComputerMethod(wrapper = SpecialComputerMethodWrapper.ComputerIInventorySlotWrapper.class, methodNames = "getEnergyItem", docPlaceholder = "energy item slot")
     EnergyInventorySlot energySlot;
 
-    public TileEntityCompressedWindGenerator(BlockPos pos, BlockState state, Long multiply_,BlockRegistryObject<BlockTile.BlockTileModel<TILE, Generator<TILE>>, ItemBlockWindGenerator> block) {
-        super(block, pos, state, ()->MekanismGeneratorsConfig.generators.windGenerationMax.get().multiply(multiply_));
-        this.multiply = multiply_;
+    public TileEntityCompressedWindGenerator(BlockPos pos, BlockState state, Long multiply,BlockRegistryObject<BlockTile.BlockTileModel<TILE, Generator<TILE>>, ItemBlockWindGenerator> block) {
+        super(block, pos, state, ()->MekanismGeneratorsConfig.generators.windGenerationMax.get().multiply(multiply));
+        this.multiply = multiply;
     }
 
     @NotNull
@@ -88,7 +88,7 @@ public abstract class TileEntityCompressedWindGenerator<TILE extends TileEntityC
     /**
      * Determines the current output multiplier, taking sky visibility and height into account.
      **/
-    private FloatingLong getMultiplier() {
+    private long getMultiplier() {
         if (level != null) {
             BlockPos top = getBlockPos().above(4);
             if (level.getFluidState(top).isEmpty() && level.canSeeSky(top)) {
@@ -97,14 +97,14 @@ public abstract class TileEntityCompressedWindGenerator<TILE extends TileEntityC
                 int minY = Math.max(MekanismGeneratorsConfig.generators.windGenerationMinY.get(), level.getMinBuildHeight());
                 int maxY = Math.min(MekanismGeneratorsConfig.generators.windGenerationMaxY.get(), level.dimensionType().logicalHeight());
                 float clampedY = Math.min(maxY, Math.max(minY, top.getY()));
-                FloatingLong minG = MekanismGeneratorsConfig.generators.windGenerationMin.get();
-                FloatingLong maxG = MekanismGeneratorsConfig.generators.windGenerationMax.get();
-                FloatingLong slope = maxG.subtract(minG).divide(maxY - minY);
-                FloatingLong toGen = minG.add(slope.multiply(clampedY - minY));
+                long minG = MekanismGeneratorsConfig.generators.windGenerationMin.get();
+                long maxG = MekanismGeneratorsConfig.generators.windGenerationMax.get();
+                long slope = maxG.subtract(minG).divide(maxY - minY);
+                long toGen = minG.add(slope.multiply(clampedY - minY));
                 return toGen.divide(minG).multiply(multiply);
             }
         }
-        return FloatingLong.ZERO;
+        return long.ZERO;
     }
 
     @Override
@@ -119,7 +119,7 @@ public abstract class TileEntityCompressedWindGenerator<TILE extends TileEntityC
         }
     }
 
-    public FloatingLong getCurrentMultiplier() {
+    public long getCurrentMultiplier() {
         return currentMultiplier;
     }
 
@@ -145,7 +145,7 @@ public abstract class TileEntityCompressedWindGenerator<TILE extends TileEntityC
     @Override
     public void addContainerTrackers(MekanismContainer container) {
         super.addContainerTrackers(container);
-        container.track(SyncableFloatingLong.create(this::getCurrentMultiplier, value -> currentMultiplier = value));
+        container.track(Syncablelong.create(this::getCurrentMultiplier, value -> currentMultiplier = value));
         container.track(SyncableBoolean.create(this::isBlacklistDimension, value -> isBlacklistDimension = value));
     }
 
@@ -158,8 +158,8 @@ public abstract class TileEntityCompressedWindGenerator<TILE extends TileEntityC
 
     //Methods relating to IComputerTile
     @Override
-    FloatingLong getProductionRate() {
-        return getActive() ? MekanismGeneratorsConfig.generators.windGenerationMin.get().multiply(getCurrentMultiplier()) : FloatingLong.ZERO;
+    long getProductionRate() {
+        return getActive() ? MekanismGeneratorsConfig.generators.windGenerationMin.get().multiply(getCurrentMultiplier()) : long.ZERO;
     }
     //End methods IComputerTile
     public long getMultiply(){

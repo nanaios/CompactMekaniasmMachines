@@ -1,14 +1,21 @@
 package com.CompactMekanismMachines.common.tile;
 
 import com.CompactMekanismMachines.common.config.CompactMekanismMachinesConfig;
+import mekanism.api.Action;
+import mekanism.api.AutomationType;
 import mekanism.api.IContentsListener;
 import mekanism.api.RelativeSide;
+import mekanism.api.chemical.ChemicalStack;
 import mekanism.api.chemical.IChemicalTank;
 import mekanism.api.chemical.attribute.ChemicalAttributeValidator;
+import mekanism.api.chemical.attribute.ChemicalAttributes;
+import mekanism.api.datamaps.IMekanismDataMapTypes;
+import mekanism.api.datamaps.chemical.attribute.CooledCoolant;
 import mekanism.api.fluid.IExtendedFluidTank;
 import mekanism.api.functions.ConstantPredicates;
 import mekanism.api.heat.HeatAPI;
 import mekanism.api.heat.IHeatCapacitor;
+import mekanism.api.math.MathUtils;
 import mekanism.common.capabilities.chemical.VariableCapacityChemicalTank;
 import mekanism.common.capabilities.heat.CachedAmbientTemperature;
 import mekanism.common.capabilities.heat.VariableHeatCapacitor;
@@ -28,8 +35,10 @@ import mekanism.common.tile.component.config.slot.ChemicalSlotInfo;
 import mekanism.common.tile.component.config.slot.FluidSlotInfo;
 import mekanism.common.tile.prefab.TileEntityConfigurableMachine;
 import mekanism.common.util.HeatUtils;
+import mekanism.common.util.MekanismUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -38,6 +47,7 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
 
     private static final double INVERSE_INSULATION_COEFFICIENT = 10_000;
     private static final double INVERSE_CONDUCTION_COEFFICIENT = 10;
+    private static final double waterConductivity = 0.5;
 
     @ContainerSync
     public IChemicalTank fuelTank;
@@ -197,6 +207,26 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
                 }
             }
         }
+    }
+
+    @Nullable
+    @SuppressWarnings("removal")
+    private CooledCoolant getCooledCoolant(ChemicalStack stack) {
+        if (stack.isEmpty()) {
+            return null;
+        }
+        CooledCoolant coolant = stack.getData(IMekanismDataMapTypes.INSTANCE.cooledChemicalCoolant());
+        if (coolant == null) {//TODO - 1.22: Remove this handling of legacy data
+            ChemicalAttributes.CooledCoolant legacyCoolant = stack.getLegacy(ChemicalAttributes.CooledCoolant.class);
+            if (legacyCoolant != null) {
+                return legacyCoolant.asModern();
+            }
+        }
+        return coolant;
+    }
+
+    private long clampCoolantHeated(double heated, long stored) {
+        return Mth.clamp(MathUtils.clampToLong(heated), 0, stored);
     }
 
     public double getBoilEfficiency() {

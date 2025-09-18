@@ -6,7 +6,8 @@ import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModLoadingContext;
 
 import com.CompactMekanismMachines.common.config.MachinesConfig;
-public class CompactMekanismMachinesConfig{
+public class
+CompactMekanismMachinesConfig{
     public static final MachinesConfig machines = new MachinesConfig();
 
 

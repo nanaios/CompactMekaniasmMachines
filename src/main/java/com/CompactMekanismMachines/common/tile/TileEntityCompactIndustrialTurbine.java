@@ -4,14 +4,10 @@ import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.IContentsListener;
 import mekanism.api.RelativeSide;
+import mekanism.api.chemical.IChemicalTank;
 import mekanism.api.functions.ConstantPredicates;
-import mekanism.api.math.FloatingLong;
-import mekanism.api.chemical.ChemicalTankBuilder;
-import mekanism.api.chemical.gas.Gas;
-import mekanism.api.chemical.gas.GasStack;
-import mekanism.api.chemical.gas.IGasTank;
 import mekanism.api.math.MathUtils;
-import mekanism.common.capabilities.chemical.variable.VariableCapacityChemicalTankBuilder.VariableCapacityGasTank;
+import mekanism.common.capabilities.chemical.VariableCapacityChemicalTank;
 import mekanism.common.capabilities.energy.BasicEnergyContainer;
 import mekanism.common.capabilities.energy.MachineEnergyContainer;
 import mekanism.common.capabilities.fluid.VariableCapacityFluidTank;
@@ -26,10 +22,8 @@ import mekanism.common.integration.computer.annotation.ComputerMethod;
 import mekanism.common.integration.computer.annotation.SyntheticComputerMethod;
 import mekanism.common.inventory.container.sync.dynamic.ContainerSync;
 import mekanism.common.lib.transmitter.TransmissionType;
-import mekanism.common.registries.MekanismGases;
-import mekanism.common.tags.MekanismTags;
+import mekanism.common.registries.MekanismChemicals;
 import mekanism.common.tile.TileEntityChemicalTank;
-import mekanism.common.tile.component.TileComponentConfig;
 import mekanism.common.tile.component.TileComponentEjector;
 import mekanism.common.tile.component.config.ConfigInfo;
 import mekanism.common.tile.component.config.DataType;
@@ -38,7 +32,6 @@ import mekanism.common.tile.component.config.slot.EnergySlotInfo;
 import mekanism.common.tile.component.config.slot.FluidSlotInfo;
 import mekanism.common.tile.prefab.TileEntityConfigurableMachine;
 import mekanism.common.util.CableUtils;
-import mekanism.common.util.MekanismUtils;
 
 import mekanism.generators.common.config.MekanismGeneratorsConfig;
 import mekanism.generators.common.content.turbine.TurbineValidator;
@@ -46,7 +39,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import com.CompactMekanismMachines.common.registries.CompactBlocks;
@@ -60,10 +53,10 @@ public class TileEntityCompactIndustrialTurbine extends TileEntityConfigurableMa
     /**
      * The tank this block is storing fuel in.
      */
-    public GasTank gasTank;
-    public FluidTank ventTank;
+    public IChemicalTank gasTank;
+    public VariableCapacityFluidTank ventTank;
     public BasicEnergyContainer energyContainer;
-    private FloatingLong maxoutput = FloatingLong.create(Long.MAX_VALUE);
+    private long maxoutput = Long.MAX_VALUE;
 
     public Integer lowerVolume = CompactMekanismMachinesConfig.machines.turbinevertuallowervolume.get();
 
@@ -80,40 +73,52 @@ public class TileEntityCompactIndustrialTurbine extends TileEntityConfigurableMa
 
     public TileEntityCompactIndustrialTurbine(BlockPos pos, BlockState state) {
         super(CompactBlocks.COMPACT_INDUSTRIAL_TURBINE, pos, state);
-        configComponent = new TileComponentConfig(this, TransmissionType.GAS,TransmissionType.FLUID,TransmissionType.ENERGY);
-        ConfigInfo gasConfig = configComponent.getConfig(TransmissionType.GAS);
-        if (gasConfig !=null){
-            gasConfig.addSlotInfo(DataType.INPUT, new ChemicalSlotInfo.GasSlotInfo(true,false, gasTank));
-            gasConfig.setDataType(DataType.INPUT,RelativeSide.FRONT);
+
+        ConfigInfo chemicalConfig = configComponent.getConfig(TransmissionType.CHEMICAL);
+        if (chemicalConfig !=null){
+            chemicalConfig.addSlotInfo(DataType.INPUT, new ChemicalSlotInfo(true,false, gasTank));
+            chemicalConfig.setDataType(DataType.INPUT,RelativeSide.FRONT);
         }
         ConfigInfo fluidConfig = configComponent.getConfig(TransmissionType.FLUID);
         if (fluidConfig!=null){
             fluidConfig.addSlotInfo(DataType.OUTPUT,new FluidSlotInfo(false,true,ventTank));
             fluidConfig.setDataType(DataType.OUTPUT,RelativeSide.TOP);
         }
+
         ConfigInfo energyConfig = configComponent.getConfig(TransmissionType.ENERGY);
         if (energyConfig!=null){
             energyConfig.addSlotInfo(DataType.OUTPUT,new EnergySlotInfo(false,true,energyContainer));
             energyConfig.setDataType(DataType.OUTPUT,RelativeSide.BOTTOM);
         }
-        ejectorComponent = new TileComponentEjector(this, ()->Long.MAX_VALUE,()->Integer.MAX_VALUE,()-> FloatingLong.create(Long.MAX_VALUE));
-        ejectorComponent.setOutputData(configComponent, TransmissionType.GAS,TransmissionType.FLUID,TransmissionType.ENERGY)
-                .setCanEject(type -> MekanismUtils.canFunction(this));
+        ejectorComponent = new TileComponentEjector(this, ()->Long.MAX_VALUE,()->Integer.MAX_VALUE,()->Long.MAX_VALUE);
+        ejectorComponent.setOutputData(configComponent, TransmissionType.CHEMICAL,TransmissionType.FLUID,TransmissionType.ENERGY);
     }
 
-    @NotNull
     @Override
-    public IChemicalTankHolder<Gas, GasStack, IGasTank> getInitialGasTanks(IContentsListener listener) {
-        ChemicalTankHelper<Gas, GasStack, IGasTank> builder = ChemicalTankHelper.forSideGasWithConfig(this::getDirection,this::getConfig);
-        builder.addTank(gasTank = new GasTank(listener));
+    public @Nullable IChemicalTankHolder getInitialChemicalTanks(IContentsListener listener) {
+        ChemicalTankHelper builder = ChemicalTankHelper.forSideWithConfig(this);
+        builder.addTank(gasTank = VariableCapacityChemicalTank.create(
+                CompactMekanismMachinesConfig.machines.turbinegascapacity,
+                ConstantPredicates.notExternal(),
+                ConstantPredicates.alwaysTrueBi(),
+                gas -> gas.is(MekanismChemicals.STEAM),
+                null,
+                listener
+        ));
         return builder.build();
     }
 
     @NotNull
     @Override
     public IFluidTankHolder getInitialFluidTanks(IContentsListener listener){
-        FluidTankHelper builder = FluidTankHelper.forSideWithConfig(this::getDirection,this::getConfig);
-        builder.addTank(ventTank = new FluidTank(listener));
+        FluidTankHelper builder = FluidTankHelper.forSideWithConfig(this);
+        builder.addTank(ventTank = VariableCapacityFluidTank.create(
+                CompactMekanismMachinesConfig.machines.turbinefluidcapacity,
+                ConstantPredicates.alwaysTrueBi(),
+                ConstantPredicates.notExternal(),
+                fluid -> fluid.is(Fluids.WATER),
+                null
+        ));
         return builder.build();
     }
     @NotNull
@@ -129,33 +134,27 @@ public class TileEntityCompactIndustrialTurbine extends TileEntityConfigurableMa
     }
 
     @Override
-    protected void onUpdateServer() {
+    protected boolean onUpdateServer() {
         super.onUpdateServer();
         lastSteamInput = newSteamInput;
         newSteamInput = 0;
         long stored = gasTank.getStored();
         double flowRate = 0;
-        if (!gasTank.isEmpty() && MekanismUtils.canFunction(this)) {
+        if (!gasTank.isEmpty() && canFunction()) {
             setActive(true);
-            Set<Direction> emitDirections = EnumSet.noneOf(Direction.class);
-            Direction direction = getDirection();
-            for (RelativeSide energySide : getEnergySides()) {
-                emitDirections.add(energySide.getDirection(direction));
-            }
-            CableUtils.emit(emitDirections, energyContainer, this, maxoutput);
-            FloatingLong energyNeeded = energyContainer.getNeeded();
-            if (stored > 0 && !energyNeeded.isZero()) {
-                FloatingLong energyMultiplier = FloatingLong.create(CompactMekanismMachinesConfig.machines.turbineenergymultiply.getAsDouble());
-                if (energyMultiplier.isZero()) {
+            long energyNeeded = energyContainer.getNeeded();
+            if (stored > 0 && !(energyNeeded == 0)) {
+                double energyMultiplier = CompactMekanismMachinesConfig.machines.turbineenergymultiply.getAsDouble();
+                if (energyMultiplier == 0) {
                     clientFlow = 0;
                 } else {
-                    double rate = lowerVolume * (CompactMekanismMachinesConfig.machines.turbinevertualdispersers.get() * MekanismGeneratorsConfig.generators.turbineDisperserGasFlow.get());
-                    rate = Math.min(rate, CompactMekanismMachinesConfig.machines.turbinevertualvents.get() * MekanismGeneratorsConfig.generators.turbineVentGasFlow.get());
+                    double rate = lowerVolume * (CompactMekanismMachinesConfig.machines.turbinevertualdispersers.get() * MekanismGeneratorsConfig.generators.turbineDisperserChemicalFlow.get());
+                    rate = Math.min(rate, CompactMekanismMachinesConfig.machines.turbinevertualvents.get() * MekanismGeneratorsConfig.generators.turbineVentChemicalFlow.get());
                     double proportion = stored / (double) getSteamCapacity();
-                    rate = Math.min(Math.min(stored, rate), energyNeeded.divide(energyMultiplier).doubleValue()) * proportion*100000;
+                    rate = Math.min(Math.min(stored, rate), (double) energyNeeded /energyMultiplier) * proportion*100000;
                     clientFlow = MathUtils.clampToLong(rate);
                     if (clientFlow > 0) {
-                        energyContainer.insert(energyMultiplier.multiply(rate), Action.EXECUTE, AutomationType.INTERNAL);
+                        energyContainer.insert((long) (energyMultiplier * rate), Action.EXECUTE, AutomationType.INTERNAL);
                         gasTank.shrinkStack(clientFlow, Action.EXECUTE);
                         ventTank.setStack(new FluidStack(Fluids.WATER, Math.min(MathUtils.clampToInt(rate), CompactMekanismMachinesConfig.machines.turbinevertualcondensors.get()* MekanismGeneratorsConfig.generators.condenserRate.get())));
                     }
@@ -178,31 +177,10 @@ public class TileEntityCompactIndustrialTurbine extends TileEntityConfigurableMa
             }
 
         }
-
+        return true;
     }
-
-    //Methods relating to IComputerTile
-    //End methods IComputerTile
-
-    //Implementation of gas tank that on no longer being empty updates the output rate of this generator
-    private class GasTank extends VariableCapacityGasTank {
-
-        protected GasTank(@Nullable IContentsListener listener) {
-            super(CompactMekanismMachinesConfig.machines.turbinegascapacity,ChemicalTankBuilder.GAS.notExternal, ChemicalTankBuilder.GAS.alwaysTrueBi,
-                    gas -> gas == MekanismGases.STEAM.getChemical(),null,listener);
-        }
-
-    }
-
-    private  class FluidTank extends VariableCapacityFluidTank{
-        protected FluidTank(@Nullable IContentsListener listener){
-            super(CompactMekanismMachinesConfig.machines.turbinefluidcapacity, ConstantPredicates.alwaysTrueBi(),ConstantPredicates.notExternal(),
-                    fluid -> MekanismTags.Fluids.WATER_LOOKUP.contains(fluid.getFluid()),null);
-        }
-    }
-
     public long getSteamCapacity() {
-        return lowerVolume * MekanismGeneratorsConfig.generators.turbineGasPerTank.get();
+        return lowerVolume * MekanismGeneratorsConfig.generators.turbineChemicalPerTank.get();
     }
 
     @ComputerMethod(nameOverride = "setDumpingMode")
@@ -228,25 +206,23 @@ public class TileEntityCompactIndustrialTurbine extends TileEntityConfigurableMa
 
     @ComputerMethod
     public long getMaxFlowRate() {
-        double rate = lowerVolume * (CompactMekanismMachinesConfig.machines.turbinevertualdispersers.get() * MekanismGeneratorsConfig.generators.turbineDisperserGasFlow.get());
-        rate = Math.min(rate, CompactMekanismMachinesConfig.machines.turbinevertualvents.get() * MekanismGeneratorsConfig.generators.turbineVentGasFlow.get());
+        double rate = lowerVolume * (CompactMekanismMachinesConfig.machines.turbinevertualdispersers.get() * MekanismGeneratorsConfig.generators.turbineDisperserChemicalFlow.get());
+        rate = Math.min(rate, CompactMekanismMachinesConfig.machines.turbinevertualvents.get() * MekanismGeneratorsConfig.generators.turbineVentChemicalFlow.get());
         return MathUtils.clampToLong(rate);
     }
 
     @ComputerMethod
-    public FloatingLong getMaxProduction() {
-        FloatingLong energyMultiplier = MekanismConfig.general.maxEnergyPerSteam.get().divide(TurbineValidator.MAX_BLADES)
-                .multiply(CompactMekanismMachinesConfig.machines.turbinevertualblades.get());
-        double rate = lowerVolume * (CompactMekanismMachinesConfig.machines.turbinevertualdispersers.get() * MekanismGeneratorsConfig.generators.turbineDisperserGasFlow.get());
-        rate = Math.min(rate, CompactMekanismMachinesConfig.machines.turbinevertualvents.get() * MekanismGeneratorsConfig.generators.turbineVentGasFlow.get());
-        return energyMultiplier.multiply(rate);
+    public long getMaxProduction() {
+        long energyMultiplier = MekanismConfig.general.maxEnergyPerSteam.get() / TurbineValidator.MAX_BLADES * CompactMekanismMachinesConfig.machines.turbinevertualblades.get();
+        double rate = lowerVolume * (CompactMekanismMachinesConfig.machines.turbinevertualdispersers.get() * MekanismGeneratorsConfig.generators.turbineDisperserChemicalFlow.get());
+        rate = Math.min(rate, CompactMekanismMachinesConfig.machines.turbinevertualvents.get() * MekanismGeneratorsConfig.generators.turbineVentChemicalFlow.get());
+        return (long) (energyMultiplier * rate);
     }
 
     @ComputerMethod
-    public FloatingLong getProductionRate() {
-        FloatingLong energyMultiplier = MekanismConfig.general.maxEnergyPerSteam.get().divide(TurbineValidator.MAX_BLADES)
-                .multiply(CompactMekanismMachinesConfig.machines.turbinevertualblades.get());
-        return energyMultiplier.multiply(clientFlow);
+    public long getProductionRate() {
+        long energyMultiplier = MekanismConfig.general.maxEnergyPerSteam.get() /TurbineValidator.MAX_BLADES * CompactMekanismMachinesConfig.machines.turbinevertualblades.get();
+        return energyMultiplier * clientFlow;
     }
 
     public BasicEnergyContainer getEnergyContainer() {

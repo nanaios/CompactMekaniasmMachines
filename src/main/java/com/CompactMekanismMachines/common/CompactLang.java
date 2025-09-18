@@ -2,6 +2,7 @@ package com.CompactMekanismMachines.common;
 
 import mekanism.api.text.ILangEntry;
 import net.minecraft.Util;
+import org.jetbrains.annotations.NotNull;
 
 public enum CompactLang implements ILangEntry {
     DESCRIPTION_COMPACT_FISSION_REACTOR("description","compact_fission_reactor"),
@@ -20,7 +21,7 @@ public enum CompactLang implements ILangEntry {
 
 
     @Override
-    public String getTranslationKey() {
+    public @NotNull String getTranslationKey() {
         return key;
     }
 }

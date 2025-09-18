@@ -14,7 +14,7 @@ public class CompactMekanismMachinesStorageConfig extends BaseMekanismConfig {
     public final CachedLongValue cfrCoolantChemicalTankCapacity;
     public final CachedIntValue cfrCoolantFluidTankCapacity;
     public final CachedLongValue cfrHeatedCoolantTankCapacity;
-    public final CachedDoubleValue cheaterTankCapacity;
+    public final CachedDoubleValue cfrHeatTankCapacity;
     public final CachedLongValue cfrWasteTankCapacity;
     public final CachedLongValue cfrBurnRate;
     public final CachedLongValue cfrEnergyCapacity;
@@ -25,23 +25,23 @@ public class CompactMekanismMachinesStorageConfig extends BaseMekanismConfig {
     public final CachedDoubleValue turbineEnergyMultiply;
     public final CachedIntValue turbineVirtualCondenses;
     public final CachedIntValue turbineVirtualDispersers;
-    public final CachedIntValue turbinevertualvents;
-    public final CachedIntValue turbinevertualblades;
-    public final CachedIntValue turbinevertuallowervolume;
-    public final CachedIntValue evaporationheight;
+    public final CachedIntValue turbineVirtualVents;
+    public final CachedIntValue turbineVirtualBlades;
+    public final CachedIntValue turbineVirtualLowerVolume;
+    public final CachedIntValue evaporationHeight;
 
     public CompactMekanismMachinesStorageConfig() {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
         builder.comment("CompactFissionReactor Settings").push("compact fission reactor");
-        this.cfrFuelTankCapacity = CachedLongValue.wrap(this,         builder.comment("The capacity in mB of the chemical tank of fuel in the Compact Fission Reactor").defineInRange("tankCapacity", 18000000L, 1L, Long.MAX_VALUE));
-        this.cfrCoolantChemicalTankCapacity = CachedLongValue.wrap(this,      builder.comment("The capacity in mB of the chemical coolant tank of fuel in the Compact Fission Reactor").defineInRange("chemicalCoolantTankCapacity", 18000000000L, 1L, Long.MAX_VALUE));
-        this.cfrCoolantFluidTankCapacity = CachedIntValue.wrap(this,      builder.comment("The capacity in mB of the fluid coolant tank of fuel in the Compact Fission Reactor").defineInRange("fluidCoolantTankCapacity", Integer.MAX_VALUE, 1, Integer.MAX_VALUE));
+        this.cfrFuelTankCapacity = CachedLongValue.wrap(this, builder.comment("The capacity in mB of the chemical tank of fuel in the Compact Fission Reactor").defineInRange("tankCapacity", 18000000L, 1L, Long.MAX_VALUE));
+        this.cfrCoolantChemicalTankCapacity = CachedLongValue.wrap(this, builder.comment("The capacity in mB of the chemical coolant tank of fuel in the Compact Fission Reactor").defineInRange("chemicalCoolantTankCapacity", 18000000000L, 1L, Long.MAX_VALUE));
+        this.cfrCoolantFluidTankCapacity = CachedIntValue.wrap(this, builder.comment("The capacity in mB of the fluid coolant tank of fuel in the Compact Fission Reactor").defineInRange("fluidCoolantTankCapacity", Integer.MAX_VALUE, 1, Integer.MAX_VALUE));
         this.cfrHeatedCoolantTankCapacity = CachedLongValue.wrap(this,builder.comment("The capacity in mB of the heated coolant tank of fuel in the Compact Fission Reactor").defineInRange("heatedCoolantTankCapacity", 18000000000L, 1L, Long.MAX_VALUE));
         this.cfrWasteTankCapacity = CachedLongValue.wrap(this,builder.comment("The capacity in mB of the waste tank of fuel in the Compact Fission Reactor").defineInRange("tankCapacity", 18000000L, 1L, Long.MAX_VALUE));
-        this.cfrBurnRate = CachedLongValue.wrap(this,                 builder.comment("Max fuel consume per tick of Compact Fission Reactor").defineInRange("burnRate",1920,1,Long.MAX_VALUE));
-        this.cfrEnergyCapacity = CachedLongValue.wrap(this,           builder.comment("Energy Capacity of Compact Fission Reactor").defineInRange("energyCapacity",2500000000L,1L,Long.MAX_VALUE));
-        this.cheaterTankCapacity = CachedDoubleValue.wrap(this, builder.comment("The heat capacity of Compact Fission Reactor")
+        this.cfrBurnRate = CachedLongValue.wrap(this, builder.comment("Max fuel consume per tick of Compact Fission Reactor").defineInRange("burnRate",1920,1,Long.MAX_VALUE));
+        this.cfrEnergyCapacity = CachedLongValue.wrap(this, builder.comment("Energy Capacity of Compact Fission Reactor").defineInRange("energyCapacity",2500000000L,1L,Long.MAX_VALUE));
+        this.cfrHeatTankCapacity = CachedDoubleValue.wrap(this, builder.comment("The heat capacity of Compact Fission Reactor")
                 .defineInRange("HeatCapacity", 1_000_000D, 1, Double.MAX_VALUE));
         builder.pop();
 
@@ -53,11 +53,11 @@ public class CompactMekanismMachinesStorageConfig extends BaseMekanismConfig {
         this.turbineEnergyMultiply = CachedDoubleValue.wrap(this,builder.comment("turbine energy production rate magnification").defineInRange("energyMagnification",25600000,0,Double.MAX_VALUE));
         this.turbineVirtualCondenses = CachedIntValue.wrap(this, builder.comment("amount of virtual turbine condenser block").defineInRange("virtualCondenser",500,0,Integer.MAX_VALUE));
         this.turbineVirtualDispersers = CachedIntValue.wrap(this, builder.comment("amount of virtual turbine disperser block").defineInRange("virtualVent",500,0,Integer.MAX_VALUE));
-        this.turbinevertualvents = CachedIntValue.wrap(this,builder.comment("amount of virtual turbine vent block").defineInRange("upVolume",800,0,Integer.MAX_VALUE));
-        this.turbinevertualblades = CachedIntValue.wrap(this,builder.comment("amount of virtual blade").defineInRange("blades",200,0,Integer.MAX_VALUE));
-        this.turbinevertuallowervolume = CachedIntValue.wrap(this,builder.comment("virtual volume of lower section").defineInRange("lowerVolume",500,0,Integer.MAX_VALUE));
+        this.turbineVirtualVents = CachedIntValue.wrap(this,builder.comment("amount of virtual turbine vent block").defineInRange("upVolume",800,0,Integer.MAX_VALUE));
+        this.turbineVirtualBlades = CachedIntValue.wrap(this,builder.comment("amount of virtual blade").defineInRange("blades",200,0,Integer.MAX_VALUE));
+        this.turbineVirtualLowerVolume = CachedIntValue.wrap(this,builder.comment("virtual volume of lower section").defineInRange("lowerVolume",500,0,Integer.MAX_VALUE));
 
-        this.evaporationheight = CachedIntValue.wrap(this,builder.comment("virtual height of compact thermal evaporation block").defineInRange("virtual_height",36,1,Integer.MAX_VALUE));
+        this.evaporationHeight = CachedIntValue.wrap(this,builder.comment("virtual height of compact thermal evaporation block").defineInRange("virtual_height",36,1,Integer.MAX_VALUE));
 
         this.configSpec = builder.build();
     }

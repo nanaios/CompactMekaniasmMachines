@@ -229,7 +229,8 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
         return Mth.clamp(MathUtils.clampToLong(heated), 0, stored);
     }
 
-    public double getBoilEfficiency() {
+     public double getBoilEfficiency() {
+        /*
         if (fuelAssemblies == 0) {
             //If for some reason the assemblies somehow haven't been initialized (even though they have to be to form)
             // just return that it can't boil
@@ -237,5 +238,8 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
         }
         double avgSurfaceArea = surfaceArea / (double) fuelAssemblies;
         return Math.min(1, avgSurfaceArea / MekanismGeneratorsConfig.generators.fissionSurfaceAreaTarget.get());
+
+        */
+         return 1.0;
     }
 }

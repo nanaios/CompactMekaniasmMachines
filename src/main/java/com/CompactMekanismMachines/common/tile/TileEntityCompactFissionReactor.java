@@ -29,7 +29,6 @@ import mekanism.common.capabilities.holder.heat.HeatCapacitorHelper;
 import mekanism.common.capabilities.holder.heat.IHeatCapacitorHolder;
 import mekanism.common.capabilities.merged.MergedTank;
 import mekanism.common.content.boiler.BoilerMultiblockData;
-import mekanism.common.inventory.container.MekanismContainer;
 import mekanism.common.inventory.container.sync.dynamic.ContainerSync;
 import mekanism.common.lib.transmitter.TransmissionType;
 import mekanism.common.registries.MekanismChemicals;
@@ -40,11 +39,9 @@ import mekanism.common.tile.component.config.slot.ChemicalSlotInfo;
 import mekanism.common.tile.component.config.slot.FluidSlotInfo;
 import mekanism.common.tile.prefab.TileEntityConfigurableMachine;
 import mekanism.common.util.HeatUtils;
-import mekanism.common.util.MekanismUtils;
+import mekanism.generators.common.config.MekanismGeneratorsConfig;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import org.jetbrains.annotations.Nullable;
@@ -70,7 +67,8 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
     public IHeatCapacitor heatCapacitor;
 
     @ContainerSync
-    public double lastUsed = 0;
+    public long lastBurned = 0;
+    public long lastBoilRate = 0;
     private final double biomeAmbientTemp;
 
     public TileEntityCompactFissionReactor(BlockPos pos, BlockState state) {
@@ -193,29 +191,75 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
 
         setActive(true);
 
-        //燃焼効率を1あげるのに必要な燃料量
-        long fuelPerEfficiency = fuelTank.getCapacity() / CompactMekanismMachinesConfig.storage.cfrMaxBurnRate.get();
-        //燃焼効率の自動計算
-        long rate = Math.ceilDiv(fuelTank.getStored(),fuelPerEfficiency);
-
-        long usedFuel = fuelTank.shrinkStack(rate,Action.EXECUTE);
-
-        if(wasteTank.isEmpty()) {
-            wasteTank.setStack(new ChemicalStack(MekanismChemicals.NUCLEAR_WASTE,usedFuel));
-        } else {
-            wasteTank.growStack(usedFuel,Action.EXECUTE);
-        }
-
-        lastUsed = usedFuel;
-
+        burnFuel();
         handleCoolant();
 
         return needPacket;
     }
 
     private void handleCoolant() {
-        CooledCoolant cooled = getCooledCoolant(coolantChemicalTank.getStack());
 
+        switch (coolantTank.getCurrentType()) {
+            case EMPTY -> lastBoilRate = 0;
+            case FLUID -> {
+                long coolantAmount = Math.round(MekanismGeneratorsConfig.generators.energyPerFissionFuel.get() * HeatUtils.getSteamEnergyEfficiency() / HeatUtils.getWaterThermalEnthalpy()) * lastBurned;
+                coolantAmount = Math.min(coolantAmount,coolantFluidTank.getFluidAmount());
+
+                if(coolantAmount > 0) {
+                    long shrunk = lastBoilRate = coolantFluidTank.shrinkStack(MathUtils.clampToInt(coolantAmount),Action.EXECUTE);
+                    heatedCoolantTank.insert(MekanismChemicals.STEAM.asStack(shrunk), Action.EXECUTE, AutomationType.INTERNAL);
+
+                    double caseCoolantHeat = lastBoilRate * HeatUtils.getWaterThermalEnthalpy() / HeatUtils.getSteamEnergyEfficiency();
+                    heatCapacitor.handleHeat(-caseCoolantHeat);
+                } else {
+                    lastBoilRate = 0;
+                }
+            }
+            case CHEMICAL -> {
+                CooledCoolant coolant = getCooledCoolant(coolantChemicalTank.getStack());
+                if(coolant != null) {
+                    long coolantAmount = Math.round(MekanismGeneratorsConfig.generators.energyPerFissionFuel.get() / coolant.thermalEnthalpy()) * lastBurned;
+                    coolantAmount = Math.min(coolantAmount,coolantChemicalTank.getStored());
+
+                    if(coolantAmount > 0) {
+                        long shrunk = lastBoilRate = coolantChemicalTank.shrinkStack(coolantAmount,Action.EXECUTE);
+                        heatedCoolantTank.insert(coolant.heat(shrunk), Action.EXECUTE, AutomationType.INTERNAL);
+
+                        double caseCoolantHeat = lastBoilRate * coolant.thermalEnthalpy();
+                        heatCapacitor.handleHeat(-caseCoolantHeat);
+                    } else {
+                        lastBoilRate = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    private void burnFuel() {
+        //燃焼効率を1あげるのに必要な燃料量
+        long fuelPerEfficiency = fuelTank.getCapacity() / CompactMekanismMachinesConfig.storage.cfrMaxBurnRate.get();
+        //燃焼効率の自動計算
+        long rate = Math.ceilDiv(fuelTank.getStored(),fuelPerEfficiency);
+
+        long toBurn = fuelTank.shrinkStack(
+                Math.min(rate,fuelTank.getStored())
+                ,Action.EXECUTE
+        );
+
+        heatCapacitor.handleHeat(toBurn * MekanismGeneratorsConfig.generators.energyPerFissionFuel.get());
+
+        if(wasteTank.isEmpty()) {
+            wasteTank.setStack(new ChemicalStack(MekanismChemicals.NUCLEAR_WASTE,toBurn));
+        } else {
+            wasteTank.growStack(toBurn,Action.EXECUTE);
+        }
+
+        lastBurned = toBurn;
+    }
+
+
+    private long clampCoolantHeated(double heated, long stored) {
+        return Mth.clamp(MathUtils.clampToLong(heated), 0, stored);
     }
 
     @Nullable

@@ -42,18 +42,10 @@ public class GuiCompactFissionReactor extends GuiConfigurableTile<TileEntityComp
     @Override
     protected void drawForegroundText(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY)
     {
-        renderTitleText(guiGraphics);
         super.drawForegroundText(guiGraphics, mouseX, mouseY);
+        renderTitleText(guiGraphics);
 
-        drawScrollingString(
-                guiGraphics,
-                GeneratorsLang.GAS_BURN_RATE.translate(tile.lastUsed),
-                0,
-                0,
-                TextAlignment.LEFT,
-                titleTextColor(),
-                100,
-                false
-        );
+
+        drawScrollingString(guiGraphics, GeneratorsLang.GAS_BURN_RATE.translate(tile.lastBurned), 45, inventoryLabelY, TextAlignment.CENTER, titleTextColor(), 4, false);
     }
 }

@@ -18,10 +18,13 @@ import mekanism.api.heat.HeatAPI;
 import mekanism.api.heat.IHeatCapacitor;
 import mekanism.api.math.MathUtils;
 import mekanism.common.capabilities.chemical.VariableCapacityChemicalTank;
+import mekanism.common.capabilities.fluid.VariableCapacityFluidTank;
 import mekanism.common.capabilities.heat.CachedAmbientTemperature;
 import mekanism.common.capabilities.heat.VariableHeatCapacitor;
 import mekanism.common.capabilities.holder.chemical.ChemicalTankHelper;
 import mekanism.common.capabilities.holder.chemical.IChemicalTankHolder;
+import mekanism.common.capabilities.holder.fluid.FluidTankHelper;
+import mekanism.common.capabilities.holder.fluid.IFluidTankHolder;
 import mekanism.common.capabilities.holder.heat.HeatCapacitorHelper;
 import mekanism.common.capabilities.holder.heat.IHeatCapacitorHolder;
 import mekanism.common.capabilities.merged.MergedTank;
@@ -42,6 +45,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 import org.jetbrains.annotations.Nullable;
 
 public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachine {
@@ -62,12 +66,11 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
     public IExtendedFluidTank coolantFluidTank;
     @ContainerSync
     public MergedTank coolantTank;
-    @ContainerSync
     public IHeatCapacitor heatCapacitor;
 
     @ContainerSync
     public long lastBoilRate = 0;
-    private double biomeAmbientTemp;
+    private final double biomeAmbientTemp;
 
     public TileEntityCompactFissionReactor(BlockPos pos, BlockState state) {
         super(CompactBlocks.COMPACT_FISSION_REACTOR, pos, state);
@@ -105,6 +108,23 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
         }
         ejectorComponent = new TileComponentEjector(this, ()->Long.MAX_VALUE,()->Integer.MAX_VALUE,()-> Long.MAX_VALUE);
         ejectorComponent.setOutputData(configComponent, TransmissionType.CHEMICAL);
+    }
+
+    @Override
+    protected @Nullable IFluidTankHolder getInitialFluidTanks(IContentsListener listener) {
+        FluidTankHelper builder = FluidTankHelper.forSideWithConfig(this);
+
+        builder.addTank(
+                coolantFluidTank = VariableCapacityFluidTank.create(
+                        CompactMekanismMachinesConfig.storage.cfrCoolantFluidTankCapacity::get,
+                        ConstantPredicates.notExternal(),
+                        ConstantPredicates.alwaysTrueBi(),
+                        fluid -> fluid.is(Fluids.WATER),
+                        listener
+                )
+        );
+
+        return builder.build();
     }
 
     @Override
@@ -148,11 +168,13 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
     protected @Nullable IHeatCapacitorHolder getInitialHeatCapacitors(IContentsListener listener, CachedAmbientTemperature ambientTemperature) {
         HeatCapacitorHelper builder = HeatCapacitorHelper.forSideWithConfig(this);
 
-        heatCapacitor = VariableHeatCapacitor.create(
-                CompactMekanismMachinesConfig.storage.cfrHeatTankCapacity.get(),
-                () -> INVERSE_CONDUCTION_COEFFICIENT,
-                () -> INVERSE_INSULATION_COEFFICIENT,
-                () -> biomeAmbientTemp, null
+        builder.addCapacitor(
+                heatCapacitor = VariableHeatCapacitor.create(
+                        CompactMekanismMachinesConfig.storage.cfrHeatTankCapacity.get(),
+                        () -> INVERSE_CONDUCTION_COEFFICIENT,
+                        () -> INVERSE_INSULATION_COEFFICIENT,
+                        () -> biomeAmbientTemp, null
+                )
         );
 
         return builder.build();

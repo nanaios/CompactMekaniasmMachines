@@ -187,12 +187,17 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
         boolean needPacket = super.onUpdateServer();
 
         //稼働状態および燃料の確認
-        if(fuelTank.isEmpty() || !canFunction()) return needPacket;
+        if(!fuelTank.isEmpty() && canFunction()) {
+            setActive(true);
 
-        setActive(true);
+            burnFuel();
+            handleCoolant();
 
-        burnFuel();
-        handleCoolant();
+            needPacket = true;
+        } else {
+            setActive(false);
+        }
+
 
         return needPacket;
     }

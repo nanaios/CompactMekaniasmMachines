@@ -161,10 +161,16 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
     protected boolean onUpdateServer() {
         boolean needPacket = super.onUpdateServer();
 
-        //稼働状態の確認
+        //稼働状態および燃料の確認
         if(fuelTank.isEmpty() || !canFunction()) return needPacket;
 
         setActive(true);
+
+        //燃焼効率を1あげるのに必要な燃料量
+        long fuelPerEfficiency = fuelTank.getCapacity() / CompactMekanismMachinesConfig.storage.cfrMaxBurnRate.get();
+        //燃焼効率の自動計算
+        long rate = Math.ceilDiv(fuelTank.getStored(),fuelPerEfficiency);
+
 
 
         return needPacket;

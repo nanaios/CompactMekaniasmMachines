@@ -1,6 +1,7 @@
 package com.CompactMekanismMachines.common.tile;
 
 import com.CompactMekanismMachines.common.config.CompactMekanismMachinesConfig;
+import com.CompactMekanismMachines.common.registries.CompactBlocks;
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.IContentsListener;
@@ -68,8 +69,8 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
     public long lastBoilRate = 0;
     private double biomeAmbientTemp;
 
-    public TileEntityCompactFissionReactor(Holder<Block> blockProvider, BlockPos pos, BlockState state) {
-        super(blockProvider, pos, state);
+    public TileEntityCompactFissionReactor(BlockPos pos, BlockState state) {
+        super(CompactBlocks.COMPACT_FISSION_REACTOR, pos, state);
 
         // super内部でgetInitial**といったメソッドが呼び出されている。
         // そのため、この時点で2つのタンクは初期化されており問題なく使用できる

@@ -1,6 +1,7 @@
 package com.CompactMekanismMachines.common;
 
 import com.CompactMekanismMachines.common.config.CompactMekanismMachinesConfig;
+import com.CompactMekanismMachines.common.registries.*;
 import com.mojang.logging.LogUtils;
 import mekanism.common.lib.Version;
 import net.minecraft.resources.ResourceLocation;
@@ -23,6 +24,10 @@ public class CompactMekanismMachines {
         versionNumber = new Version(modContainer);
 
         CompactMekanismMachinesConfig.registerConfigs(modContainer);
+        CompactBlocks.BLOCKS.register(modEventBus);
+        CompactContainerTypes.CONTAINER_TYPES.register(modEventBus);
+        CompactTileEntityTypes.TILE_ENTITY_TYPES.register(modEventBus);
+        CompactCreativeTabs.CREATIVE_TABS.register(modEventBus);
 
         modEventBus.addListener(CompactMekanismMachinesConfig::onConfigLoad);
     }

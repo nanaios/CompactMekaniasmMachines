@@ -29,6 +29,7 @@ import mekanism.common.capabilities.holder.heat.HeatCapacitorHelper;
 import mekanism.common.capabilities.holder.heat.IHeatCapacitorHolder;
 import mekanism.common.capabilities.merged.MergedTank;
 import mekanism.common.content.boiler.BoilerMultiblockData;
+import mekanism.common.inventory.container.MekanismContainer;
 import mekanism.common.inventory.container.sync.dynamic.ContainerSync;
 import mekanism.common.lib.transmitter.TransmissionType;
 import mekanism.common.registries.MekanismChemicals;
@@ -69,7 +70,7 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
     public IHeatCapacitor heatCapacitor;
 
     @ContainerSync
-    public long lastBoilRate = 0;
+    public double lastUsed = 0;
     private final double biomeAmbientTemp;
 
     public TileEntityCompactFissionReactor(BlockPos pos, BlockState state) {
@@ -102,6 +103,9 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
         ConfigInfo fluidConfig = configComponent.getConfig(TransmissionType.FLUID);
         if (fluidConfig!=null){
             fluidConfig.addSlotInfo(DataType.INPUT,new FluidSlotInfo(true,false,coolantFluidTank));
+            for (RelativeSide side : RelativeSide.values()) {
+                fluidConfig.setDataType(DataType.INPUT,side);
+            }
 
             fluidConfig.setCanEject(false);
             fluidConfig.setEjecting(false);
@@ -194,48 +198,24 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
         //燃焼効率の自動計算
         long rate = Math.ceilDiv(fuelTank.getStored(),fuelPerEfficiency);
 
+        long usedFuel = fuelTank.shrinkStack(rate,Action.EXECUTE);
 
+        if(wasteTank.isEmpty()) {
+            wasteTank.setStack(new ChemicalStack(MekanismChemicals.NUCLEAR_WASTE,usedFuel));
+        } else {
+            wasteTank.growStack(usedFuel,Action.EXECUTE);
+        }
+
+        lastUsed = usedFuel;
+
+        handleCoolant();
 
         return needPacket;
     }
 
     private void handleCoolant() {
-        double heat = getBoilEfficiency() * (heatCapacitor.getHeat() - HeatUtils.BASE_BOIL_TEMP * heatCapacitor.getHeatCapacity());
+        CooledCoolant cooled = getCooledCoolant(coolantChemicalTank.getStack());
 
-        switch (coolantTank.getCurrentType()) {
-            case EMPTY -> lastBoilRate = 0;
-            case FLUID -> {
-                IExtendedFluidTank fluidCoolantTank = coolantTank.getFluidTank();
-                double caseCoolantHeat = heat * waterConductivity;
-                lastBoilRate = clampCoolantHeated(HeatUtils.getSteamEnergyEfficiency() * caseCoolantHeat / HeatUtils.getWaterThermalEnthalpy(),
-                        fluidCoolantTank.getFluidAmount());
-                if (lastBoilRate > 0) {
-                    MekanismUtils.logMismatchedStackSize(fluidCoolantTank.shrinkStack((int) lastBoilRate, Action.EXECUTE), lastBoilRate);
-                    // extra steam is dumped
-                    heatedCoolantTank.insert(MekanismChemicals.STEAM.asStack(lastBoilRate), Action.EXECUTE, AutomationType.INTERNAL);
-                    caseCoolantHeat = lastBoilRate * HeatUtils.getWaterThermalEnthalpy() / HeatUtils.getSteamEnergyEfficiency();
-                    heatCapacitor.handleHeat(-caseCoolantHeat);
-                } else {
-                    lastBoilRate = 0;
-                }
-            }
-            case CHEMICAL -> {
-                IChemicalTank chemicalCoolantTank = coolantTank.getChemicalTank();
-                CooledCoolant coolantType = getCooledCoolant(chemicalCoolantTank.getStack());
-                if (coolantType != null) {
-                    double caseCoolantHeat = heat * coolantType.conductivity();
-                    lastBoilRate = clampCoolantHeated(caseCoolantHeat / coolantType.thermalEnthalpy(), chemicalCoolantTank.getStored());
-                    if (lastBoilRate > 0) {
-                        MekanismUtils.logMismatchedStackSize(chemicalCoolantTank.shrinkStack(lastBoilRate, Action.EXECUTE), lastBoilRate);
-                        heatedCoolantTank.insert(coolantType.heat(lastBoilRate), Action.EXECUTE, AutomationType.INTERNAL);
-                        caseCoolantHeat = lastBoilRate * coolantType.thermalEnthalpy();
-                        heatCapacitor.handleHeat(-caseCoolantHeat);
-                    }
-                } else {
-                    lastBoilRate = 0;
-                }
-            }
-        }
     }
 
     @Nullable
@@ -252,23 +232,5 @@ public class TileEntityCompactFissionReactor extends TileEntityConfigurableMachi
             }
         }
         return coolant;
-    }
-
-    private long clampCoolantHeated(double heated, long stored) {
-        return Mth.clamp(MathUtils.clampToLong(heated), 0, stored);
-    }
-
-     public double getBoilEfficiency() {
-        /*
-        if (fuelAssemblies == 0) {
-            //If for some reason the assemblies somehow haven't been initialized (even though they have to be to form)
-            // just return that it can't boil
-            return 0;
-        }
-        double avgSurfaceArea = surfaceArea / (double) fuelAssemblies;
-        return Math.min(1, avgSurfaceArea / MekanismGeneratorsConfig.generators.fissionSurfaceAreaTarget.get());
-
-        */
-         return 1.0;
     }
 }

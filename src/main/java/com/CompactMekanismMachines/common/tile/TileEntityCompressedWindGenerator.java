@@ -10,7 +10,6 @@ import mekanism.common.inventory.container.sync.SyncableDouble;
 import mekanism.common.inventory.slot.EnergyInventorySlot;
 import mekanism.common.tile.interfaces.IBoundingBlock;
 import mekanism.generators.common.config.MekanismGeneratorsConfig;
-import mekanism.generators.common.tile.TileEntityGenerator;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -158,5 +157,8 @@ public abstract class TileEntityCompressedWindGenerator<TILE extends TileEntityC
         container.track(SyncableBoolean.create(this::isBlacklistDimension, value -> isBlacklistDimension = value));
     }
 
-    public abstract long getProductionRate();
+    @Override
+    double getProductionRate() {
+        return getActive() ? MekanismGeneratorsConfig.generators.windGenerationMin.get() * getCurrentMultiplier() : 0L;
+    }
 }

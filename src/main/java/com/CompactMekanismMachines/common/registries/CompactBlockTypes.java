@@ -3,10 +3,13 @@ package com.CompactMekanismMachines.common.registries;
 import com.CompactMekanismMachines.common.config.CompactMekanismMachinesConfig;
 import com.CompactMekanismMachines.common.tile.TileEntityCompactFissionReactor;
 import com.CompactMekanismMachines.common.tile.TileEntityCompactIndustrialTurbine;
+import com.CompactMekanismMachines.common.tile.TileEntityCompactThermalEvaporation;
 import mekanism.api.Upgrade;
+import mekanism.common.MekanismLang;
 import mekanism.common.block.attribute.Attributes;
 import mekanism.common.content.blocktype.Machine;
 import mekanism.common.lib.transmitter.TransmissionType;
+import mekanism.common.registries.MekanismSounds;
 import mekanism.generators.common.GeneratorsLang;
 import mekanism.generators.common.content.blocktype.Generator;
 import mekanism.generators.common.registries.GeneratorsSounds;
@@ -32,5 +35,12 @@ public class CompactBlockTypes {
             .withSound(GeneratorsSounds.FISSION_REACTOR)
             .withSupportedUpgrades(Upgrade.MUFFLING)
             .replace(Attributes.ACTIVE_MELT_LIGHT)
+            .build();
+
+    public static final Machine<TileEntityCompactThermalEvaporation> COMPACT_THERMAL_EVAPORATION = Machine.MachineBuilder
+            .createMachine(() -> CompactTileEntityTypes.COMPACT_THERMAL_EVAPORATION, MekanismLang.DESCRIPTION_THERMAL_EVAPORATION_CONTROLLER)
+            .withSideConfig(TransmissionType.FLUID,TransmissionType.ENERGY)
+            .withGui(() -> CompactContainerTypes.COMPACT_THERMAL_EVAPORATION)
+            .withSupportedUpgrades(Upgrade.MUFFLING)
             .build();
 }

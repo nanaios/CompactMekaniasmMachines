@@ -1,6 +1,7 @@
 package com.CompactMekanismMachines.client;
 
 import com.CompactMekanismMachines.client.gui.GuiCompactFissionReactor;
+import com.CompactMekanismMachines.client.gui.GuiCompactIndustrialTurbine;
 import com.CompactMekanismMachines.common.CompactMekanismMachines;
 import com.CompactMekanismMachines.common.registries.CompactContainerTypes;
 import mekanism.client.ClientRegistrationUtil;
@@ -14,5 +15,6 @@ public class CompactClientRegistration {
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
         ClientRegistrationUtil.registerScreen(event, CompactContainerTypes.COMPACT_FISSION_REACTOR, GuiCompactFissionReactor::new);
+        ClientRegistrationUtil.registerScreen(event, CompactContainerTypes.COMPACT_INDUSTRIAL_TURBINE, GuiCompactIndustrialTurbine::new);
     }
 }

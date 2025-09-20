@@ -5,6 +5,7 @@ import com.CompactMekanismMachines.common.tile.CompressedWindGenerator.TileEntit
 import com.CompactMekanismMachines.common.tile.TileEntityCompactFissionReactor;
 import com.CompactMekanismMachines.common.tile.TileEntityCompactIndustrialTurbine;
 import com.CompactMekanismMachines.common.tile.TileEntityCompactThermalEvaporation;
+import com.CompactMekanismMachines.common.tile.TileEntityCompressedWindGenerator;
 import mekanism.common.capabilities.Capabilities;
 import mekanism.common.registration.impl.TileEntityTypeDeferredRegister;
 import mekanism.common.registration.impl.TileEntityTypeRegistryObject;
@@ -38,7 +39,15 @@ public class CompactTileEntityTypes {
                 .withSimple(Capabilities.CONFIG_CARD)
                 .build();
 
-        WIND_GENERATOR_X2 = TILE_ENTITY_TYPES.mekBuilder(CompactBlocks.WIND_GENERATOR_X2, TileEntityCompressedWindGenerator_x2::new)
+        WIND_GENERATOR_X2 = TILE_ENTITY_TYPES.mekBuilder(CompactBlocks.WIND_GENERATOR_X2, (  pos, state) -> new TileEntityCompressedWindGenerator_x2(pos,state))
+                .clientTicker(TileEntityMekanism::tickClient)
+                .serverTicker(TileEntityMekanism::tickServer)
+                .withSimple(Capabilities.CONFIG_CARD)
+                .build();
+    }
+
+    public static TileEntityTypeRegistryObject<TileEntityCompressedWindGenerator<?>> registerWindGenerator(){
+        return TILE_ENTITY_TYPES.mekBuilder(CompactBlocks.WIND_GENERATOR_X2, (  pos, state) -> new TileEntityCompressedWindGenerator_x2(pos,state))
                 .clientTicker(TileEntityMekanism::tickClient)
                 .serverTicker(TileEntityMekanism::tickServer)
                 .withSimple(Capabilities.CONFIG_CARD)

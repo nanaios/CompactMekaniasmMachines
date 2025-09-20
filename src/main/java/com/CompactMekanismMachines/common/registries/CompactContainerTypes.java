@@ -24,6 +24,12 @@ public class CompactContainerTypes {
     public static final ContainerTypeRegistryObject<MekanismTileContainer<TileEntityCompressedWindGenerator_x32>> WIND_GENERATOR_X32;
     public static final ContainerTypeRegistryObject<MekanismTileContainer<TileEntityCompressedWindGenerator_x128>> WIND_GENERATOR_X128;
     public static final ContainerTypeRegistryObject<MekanismTileContainer<TileEntityCompressedWindGenerator_x512>> WIND_GENERATOR_X512;
+    public static final ContainerTypeRegistryObject<MekanismTileContainer<TileEntityCompressedWindGenerator_x2048>> WIND_GENERATOR_X2048;
+    public static final ContainerTypeRegistryObject<MekanismTileContainer<TileEntityCompressedWindGenerator_x8192>> WIND_GENERATOR_X8192;
+    public static final ContainerTypeRegistryObject<MekanismTileContainer<TileEntityCompressedWindGenerator_x32768>> WIND_GENERATOR_X32768;
+    public static final ContainerTypeRegistryObject<MekanismTileContainer<TileEntityCompressedWindGenerator_x131072>> WIND_GENERATOR_X131072;
+    public static final ContainerTypeRegistryObject<MekanismTileContainer<TileEntityCompressedWindGenerator_x532480>> WIND_GENERATOR_X532480;
+
     static {
         COMPACT_FISSION_REACTOR = CONTAINER_TYPES.register(CompactBlocks.COMPACT_FISSION_REACTOR, TileEntityCompactFissionReactor.class);
         COMPACT_INDUSTRIAL_TURBINE = CONTAINER_TYPES.register(CompactBlocks.COMPACT_INDUSTRIAL_TURBINE, TileEntityCompactIndustrialTurbine.class);
@@ -33,5 +39,10 @@ public class CompactContainerTypes {
         WIND_GENERATOR_X32 = CONTAINER_TYPES.custom(CompactBlocks.WIND_GENERATOR_X32, TileEntityCompressedWindGenerator_x32.class).armorSideBar(-20, 11, 0).build();
         WIND_GENERATOR_X128 = CONTAINER_TYPES.custom(CompactBlocks.WIND_GENERATOR_X128, TileEntityCompressedWindGenerator_x128.class).armorSideBar(-20, 11, 0).build();
         WIND_GENERATOR_X512 = CONTAINER_TYPES.custom(CompactBlocks.WIND_GENERATOR_X512, TileEntityCompressedWindGenerator_x512.class).armorSideBar(-20, 11, 0).build();
+        WIND_GENERATOR_X2048 = CONTAINER_TYPES.custom(CompactBlocks.WIND_GENERATOR_X2048, TileEntityCompressedWindGenerator_x2048.class).armorSideBar(-20, 11, 0).build();
+        WIND_GENERATOR_X8192 = CONTAINER_TYPES.custom(CompactBlocks.WIND_GENERATOR_X8192, TileEntityCompressedWindGenerator_x8192.class).armorSideBar(-20, 11, 0).build();
+        WIND_GENERATOR_X32768 = CONTAINER_TYPES.custom(CompactBlocks.WIND_GENERATOR_X32768, TileEntityCompressedWindGenerator_x32768.class).armorSideBar(-20, 11, 0).build();
+        WIND_GENERATOR_X131072 = CONTAINER_TYPES.custom(CompactBlocks.WIND_GENERATOR_X131072, TileEntityCompressedWindGenerator_x131072.class).armorSideBar(-20, 11, 0).build();
+        WIND_GENERATOR_X532480 = CONTAINER_TYPES.custom(CompactBlocks.WIND_GENERATOR_X532480, TileEntityCompressedWindGenerator_x532480.class).armorSideBar(-20, 11, 0).build();
     }
 }

@@ -1,10 +1,12 @@
 package com.CompactMekanismMachines.common.registries;
 
+import com.CompactMekanismMachines.common.CompactLang;
 import com.CompactMekanismMachines.common.config.CompactMekanismMachinesConfig;
 import com.CompactMekanismMachines.common.tile.CompressedWindGenerator.*;
 import com.CompactMekanismMachines.common.tile.TileEntityCompactFissionReactor;
 import com.CompactMekanismMachines.common.tile.TileEntityCompactIndustrialTurbine;
 import com.CompactMekanismMachines.common.tile.TileEntityCompactThermalEvaporation;
+import com.CompactMekanismMachines.common.util.CompressedWindGeneratorLevel;
 import mekanism.api.Upgrade;
 import mekanism.api.text.ILangEntry;
 import mekanism.common.MekanismLang;
@@ -58,24 +60,44 @@ public class CompactBlockTypes {
             .build();
 
     public static final Generator<TileEntityCompressedWindGenerator_x2> WIND_GENERATOR_X2 = createWindGenerator(
-                    CompactTileEntityTypes.WIND_GENERATOR_X2, GeneratorsLang.DESCRIPTION_WIND_GENERATOR,
-                    CompactContainerTypes.WIND_GENERATOR_X2,2);
+            CompactTileEntityTypes.WIND_GENERATOR_X2, GeneratorsLang.DESCRIPTION_WIND_GENERATOR,
+            CompactContainerTypes.WIND_GENERATOR_X2,CompressedWindGeneratorLevel.X2);
 
     public static final Generator<TileEntityCompressedWindGenerator_x8> WIND_GENERATOR_X8 = createWindGenerator(
             CompactTileEntityTypes.WIND_GENERATOR_X8, GeneratorsLang.DESCRIPTION_WIND_GENERATOR,
-            CompactContainerTypes.WIND_GENERATOR_X8,8);
+            CompactContainerTypes.WIND_GENERATOR_X8,CompressedWindGeneratorLevel.X8);
 
     public static final Generator<TileEntityCompressedWindGenerator_x32> WIND_GENERATOR_X32 = createWindGenerator(
             CompactTileEntityTypes.WIND_GENERATOR_X32, GeneratorsLang.DESCRIPTION_WIND_GENERATOR,
-            CompactContainerTypes.WIND_GENERATOR_X32,32);
+            CompactContainerTypes.WIND_GENERATOR_X32,CompressedWindGeneratorLevel.X32);
 
     public static final Generator<TileEntityCompressedWindGenerator_x128> WIND_GENERATOR_X128 = createWindGenerator(
             CompactTileEntityTypes.WIND_GENERATOR_X128, GeneratorsLang.DESCRIPTION_WIND_GENERATOR,
-            CompactContainerTypes.WIND_GENERATOR_X128,128);
+            CompactContainerTypes.WIND_GENERATOR_X128,CompressedWindGeneratorLevel.X128);
 
     public static final Generator<TileEntityCompressedWindGenerator_x512> WIND_GENERATOR_X512 = createWindGenerator(
             CompactTileEntityTypes.WIND_GENERATOR_X512, GeneratorsLang.DESCRIPTION_WIND_GENERATOR,
-            CompactContainerTypes.WIND_GENERATOR_X512,512);
+            CompactContainerTypes.WIND_GENERATOR_X512,CompressedWindGeneratorLevel.X512);
+
+    public static final Generator<TileEntityCompressedWindGenerator_x2048> WIND_GENERATOR_X2048 = createWindGenerator(
+            CompactTileEntityTypes.WIND_GENERATOR_X2048, GeneratorsLang.DESCRIPTION_WIND_GENERATOR,
+            CompactContainerTypes.WIND_GENERATOR_X2048,CompressedWindGeneratorLevel.X2048);
+
+    public static final Generator<TileEntityCompressedWindGenerator_x8192> WIND_GENERATOR_X8192 = createWindGenerator(
+            CompactTileEntityTypes.WIND_GENERATOR_X8192, GeneratorsLang.DESCRIPTION_WIND_GENERATOR,
+            CompactContainerTypes.WIND_GENERATOR_X8192,CompressedWindGeneratorLevel.X8192);
+
+    public static final Generator<TileEntityCompressedWindGenerator_x32768> WIND_GENERATOR_X32768 = createWindGenerator(
+            CompactTileEntityTypes.WIND_GENERATOR_X32768, GeneratorsLang.DESCRIPTION_WIND_GENERATOR,
+            CompactContainerTypes.WIND_GENERATOR_X32768,CompressedWindGeneratorLevel.X32768);
+
+    public static final Generator<TileEntityCompressedWindGenerator_x131072> WIND_GENERATOR_X131072 = createWindGenerator(
+            CompactTileEntityTypes.WIND_GENERATOR_X131072, CompactLang.DESCRIPTION_COMPRESSED_WIND_GENERATOR_x131072,
+            CompactContainerTypes.WIND_GENERATOR_X131072,CompressedWindGeneratorLevel.X131072);
+
+    public static final Generator<TileEntityCompressedWindGenerator_x532480> WIND_GENERATOR_X532480 = createWindGenerator(
+            CompactTileEntityTypes.WIND_GENERATOR_X532480, CompactLang.DESCRIPTION_COMPRESSED_WIND_GENERATOR_x532480,
+            CompactContainerTypes.WIND_GENERATOR_X532480,CompressedWindGeneratorLevel.X532480);
 
 
     public static <
@@ -84,11 +106,11 @@ public class CompactBlockTypes {
                     TileEntityTypeRegistryObject<TILE> tileEntityRegistrar,
                     ILangEntry description,
                     ContainerTypeRegistryObject<? extends MekanismContainer> containerRegistrar,
-                    int multiplier
+                    CompressedWindGeneratorLevel level
     ) {
         return Generator.GeneratorBuilder.createGenerator(() ->tileEntityRegistrar, description)
                 .withGui(() -> containerRegistrar)
-                .withEnergyConfig(() -> MekanismGeneratorsConfig.storageConfig.windGenerator.get() * multiplier)
+                .withEnergyConfig(() -> MekanismGeneratorsConfig.storageConfig.windGenerator.get() * level.getMultiplier())
                 .withCustomShape(BlockShapes.WIND_GENERATOR)
                 .with(AttributeCustomSelectionBox.JAVA)
                 .withSound(GeneratorsSounds.WIND_GENERATOR)

@@ -5,14 +5,17 @@ import com.CompactMekanismMachines.common.tile.CompressedWindGenerator.*;
 import com.CompactMekanismMachines.common.tile.TileEntityCompactFissionReactor;
 import com.CompactMekanismMachines.common.tile.TileEntityCompactIndustrialTurbine;
 import com.CompactMekanismMachines.common.tile.TileEntityCompactThermalEvaporation;
+import com.CompactMekanismMachines.common.util.CompressedWindGeneratorLevel;
 import mekanism.common.attachments.containers.ContainerType;
 import mekanism.common.attachments.containers.item.ItemSlotsBuilder;
 import mekanism.common.block.prefab.BlockTile.BlockTileModel;
+import mekanism.common.content.blocktype.BlockTypeTile;
 import mekanism.common.content.blocktype.Machine;
 import mekanism.common.item.block.ItemBlockTooltip;
 import mekanism.common.registration.impl.BlockDeferredRegister;
 import mekanism.common.registration.impl.BlockRegistryObject;
 import mekanism.common.resource.BlockResourceInfo;
+import mekanism.common.tile.base.TileEntityMekanism;
 import mekanism.generators.common.content.blocktype.Generator;
 import net.minecraft.world.level.material.MapColor;
 
@@ -56,6 +59,26 @@ public class CompactBlocks {
             BlockTileModel<TileEntityCompressedWindGenerator_x512, Generator<TileEntityCompressedWindGenerator_x512>>,
             ItemBlockTooltip<BlockTileModel<TileEntityCompressedWindGenerator_x512, Generator<TileEntityCompressedWindGenerator_x512>>>
             > WIND_GENERATOR_X512;
+    public static final BlockRegistryObject<
+            BlockTileModel<TileEntityCompressedWindGenerator_x2048, Generator<TileEntityCompressedWindGenerator_x2048>>,
+            ItemBlockTooltip<BlockTileModel<TileEntityCompressedWindGenerator_x2048, Generator<TileEntityCompressedWindGenerator_x2048>>>
+            > WIND_GENERATOR_X2048;
+    public static final BlockRegistryObject<
+            BlockTileModel<TileEntityCompressedWindGenerator_x8192, Generator<TileEntityCompressedWindGenerator_x8192>>,
+            ItemBlockTooltip<BlockTileModel<TileEntityCompressedWindGenerator_x8192, Generator<TileEntityCompressedWindGenerator_x8192>>>
+            > WIND_GENERATOR_X8192;
+    public static final BlockRegistryObject<
+            BlockTileModel<TileEntityCompressedWindGenerator_x32768, Generator<TileEntityCompressedWindGenerator_x32768>>,
+            ItemBlockTooltip<BlockTileModel<TileEntityCompressedWindGenerator_x32768, Generator<TileEntityCompressedWindGenerator_x32768>>>
+            > WIND_GENERATOR_X32768;
+    public static final BlockRegistryObject<
+            BlockTileModel<TileEntityCompressedWindGenerator_x131072, Generator<TileEntityCompressedWindGenerator_x131072>>,
+            ItemBlockTooltip<BlockTileModel<TileEntityCompressedWindGenerator_x131072, Generator<TileEntityCompressedWindGenerator_x131072>>>
+            > WIND_GENERATOR_X131072;
+    public static final BlockRegistryObject<
+            BlockTileModel<TileEntityCompressedWindGenerator_x532480, Generator<TileEntityCompressedWindGenerator_x532480>>,
+            ItemBlockTooltip<BlockTileModel<TileEntityCompressedWindGenerator_x532480, Generator<TileEntityCompressedWindGenerator_x532480>>>
+            > WIND_GENERATOR_X532480;
 
 
     static {
@@ -73,25 +96,23 @@ public class CompactBlocks {
                 () -> new BlockTileModel<>(CompactBlockTypes.COMPACT_THERMAL_EVAPORATION, properties -> properties.mapColor(BlockResourceInfo.STEEL.getMapColor()).strength(0.2F))
         );
 
-        WIND_GENERATOR_X2 = BLOCKS.registerDetails(
-                "compressed_wind_generator_x2",
-                () -> new BlockTileModel<>(CompactBlockTypes.WIND_GENERATOR_X2, properties -> properties.mapColor(MapColor.METAL))
-        ).forItemHolder(holder -> holder.addAttachmentOnlyContainers(ContainerType.ITEM, () -> ItemSlotsBuilder.builder().addEnergy().build()));
-        WIND_GENERATOR_X8 = BLOCKS.registerDetails(
-                "compressed_wind_generator_x8",
-                () -> new BlockTileModel<>(CompactBlockTypes.WIND_GENERATOR_X8, properties -> properties.mapColor(MapColor.METAL))
-        ).forItemHolder(holder -> holder.addAttachmentOnlyContainers(ContainerType.ITEM, () -> ItemSlotsBuilder.builder().addEnergy().build()));
-        WIND_GENERATOR_X32 = BLOCKS.registerDetails(
-                "compressed_wind_generator_x32",
-                () -> new BlockTileModel<>(CompactBlockTypes.WIND_GENERATOR_X32, properties -> properties.mapColor(MapColor.METAL))
-        ).forItemHolder(holder -> holder.addAttachmentOnlyContainers(ContainerType.ITEM, () -> ItemSlotsBuilder.builder().addEnergy().build()));
-        WIND_GENERATOR_X128 = BLOCKS.registerDetails(
-                "compressed_wind_generator_x128",
-                () -> new BlockTileModel<>(CompactBlockTypes.WIND_GENERATOR_X128, properties -> properties.mapColor(MapColor.METAL))
-        ).forItemHolder(holder -> holder.addAttachmentOnlyContainers(ContainerType.ITEM, () -> ItemSlotsBuilder.builder().addEnergy().build()));
-        WIND_GENERATOR_X512 = BLOCKS.registerDetails(
-                "compressed_wind_generator_x512",
-                () -> new BlockTileModel<>(CompactBlockTypes.WIND_GENERATOR_X512, properties -> properties.mapColor(MapColor.METAL))
+        WIND_GENERATOR_X2 = createWindGenerator(CompressedWindGeneratorLevel.X2, CompactBlockTypes.WIND_GENERATOR_X2);
+        WIND_GENERATOR_X8 = createWindGenerator(CompressedWindGeneratorLevel.X8, CompactBlockTypes.WIND_GENERATOR_X8);
+        WIND_GENERATOR_X32 = createWindGenerator(CompressedWindGeneratorLevel.X32, CompactBlockTypes.WIND_GENERATOR_X32);
+        WIND_GENERATOR_X128 = createWindGenerator(CompressedWindGeneratorLevel.X128, CompactBlockTypes.WIND_GENERATOR_X128);
+        WIND_GENERATOR_X512 = createWindGenerator(CompressedWindGeneratorLevel.X512, CompactBlockTypes.WIND_GENERATOR_X512);
+        WIND_GENERATOR_X2048 = createWindGenerator(CompressedWindGeneratorLevel.X2048, CompactBlockTypes.WIND_GENERATOR_X2048);
+        WIND_GENERATOR_X8192 = createWindGenerator(CompressedWindGeneratorLevel.X8192, CompactBlockTypes.WIND_GENERATOR_X8192);
+        WIND_GENERATOR_X32768 = createWindGenerator(CompressedWindGeneratorLevel.X32768, CompactBlockTypes.WIND_GENERATOR_X32768);
+        WIND_GENERATOR_X131072 = createWindGenerator(CompressedWindGeneratorLevel.X131072, CompactBlockTypes.WIND_GENERATOR_X131072);
+        WIND_GENERATOR_X532480 = createWindGenerator(CompressedWindGeneratorLevel.X532480, CompactBlockTypes.WIND_GENERATOR_X532480);
+
+    }
+
+    public static  <TILE extends TileEntityMekanism, BLOCK extends BlockTypeTile<TILE>> BlockRegistryObject<BlockTileModel<TILE, BLOCK>, ItemBlockTooltip<BlockTileModel<TILE, BLOCK>>> createWindGenerator(CompressedWindGeneratorLevel level, BLOCK block){
+        return BLOCKS.registerDetails(
+                "compressed_wind_generator_x"+level.getMultiplier(),
+                () -> new BlockTileModel<>(block, properties -> properties.mapColor(MapColor.METAL))
         ).forItemHolder(holder -> holder.addAttachmentOnlyContainers(ContainerType.ITEM, () -> ItemSlotsBuilder.builder().addEnergy().build()));
 
     }

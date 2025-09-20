@@ -12,10 +12,19 @@ public enum CompressedWindGeneratorLevel {
     X131072(8,131072),
     X532480(9,532480);
 
-    final int index;
-    final int multiplier;
-    CompressedWindGeneratorLevel(int index,int multiplier) {
+    private final int index;
+    private final int multiplier;
+
+    CompressedWindGeneratorLevel(int index, int multiplier) {
         this.index = index;
         this.multiplier = multiplier;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public int getMultiplier() {
+        return multiplier;
     }
 }

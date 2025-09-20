@@ -25,6 +25,11 @@ public class CompactTileEntityTypes {
     public static final TileEntityTypeRegistryObject<TileEntityCompressedWindGenerator_x32> WIND_GENERATOR_X32;
     public static final TileEntityTypeRegistryObject<TileEntityCompressedWindGenerator_x128> WIND_GENERATOR_X128;
     public static final TileEntityTypeRegistryObject<TileEntityCompressedWindGenerator_x512> WIND_GENERATOR_X512;
+    public static final TileEntityTypeRegistryObject<TileEntityCompressedWindGenerator_x2048> WIND_GENERATOR_X2048;
+    public static final TileEntityTypeRegistryObject<TileEntityCompressedWindGenerator_x8192> WIND_GENERATOR_X8192;
+    public static final TileEntityTypeRegistryObject<TileEntityCompressedWindGenerator_x32768> WIND_GENERATOR_X32768;
+    public static final TileEntityTypeRegistryObject<TileEntityCompressedWindGenerator_x131072> WIND_GENERATOR_X131072;
+    public static final TileEntityTypeRegistryObject<TileEntityCompressedWindGenerator_x532480> WIND_GENERATOR_X532480;
 
     static {
         COMPACT_FISSION_REACTOR = TILE_ENTITY_TYPES.mekBuilder(CompactBlocks.COMPACT_FISSION_REACTOR,TileEntityCompactFissionReactor::new)
@@ -64,6 +69,31 @@ public class CompactTileEntityTypes {
                 .withSimple(Capabilities.CONFIG_CARD)
                 .build();
         WIND_GENERATOR_X512 = TILE_ENTITY_TYPES.mekBuilder(CompactBlocks.WIND_GENERATOR_X512, TileEntityCompressedWindGenerator_x512::new)
+                .clientTicker(TileEntityMekanism::tickClient)
+                .serverTicker(TileEntityMekanism::tickServer)
+                .withSimple(Capabilities.CONFIG_CARD)
+                .build();
+        WIND_GENERATOR_X2048 = TILE_ENTITY_TYPES.mekBuilder(CompactBlocks.WIND_GENERATOR_X2048, TileEntityCompressedWindGenerator_x2048::new)
+                .clientTicker(TileEntityMekanism::tickClient)
+                .serverTicker(TileEntityMekanism::tickServer)
+                .withSimple(Capabilities.CONFIG_CARD)
+                .build();
+        WIND_GENERATOR_X8192 = TILE_ENTITY_TYPES.mekBuilder(CompactBlocks.WIND_GENERATOR_X8192, TileEntityCompressedWindGenerator_x8192::new)
+                .clientTicker(TileEntityMekanism::tickClient)
+                .serverTicker(TileEntityMekanism::tickServer)
+                .withSimple(Capabilities.CONFIG_CARD)
+                .build();
+        WIND_GENERATOR_X32768 = TILE_ENTITY_TYPES.mekBuilder(CompactBlocks.WIND_GENERATOR_X32768, TileEntityCompressedWindGenerator_x32768::new)
+                .clientTicker(TileEntityMekanism::tickClient)
+                .serverTicker(TileEntityMekanism::tickServer)
+                .withSimple(Capabilities.CONFIG_CARD)
+                .build();
+        WIND_GENERATOR_X131072 = TILE_ENTITY_TYPES.mekBuilder(CompactBlocks.WIND_GENERATOR_X131072, TileEntityCompressedWindGenerator_x131072::new)
+                .clientTicker(TileEntityMekanism::tickClient)
+                .serverTicker(TileEntityMekanism::tickServer)
+                .withSimple(Capabilities.CONFIG_CARD)
+                .build();
+        WIND_GENERATOR_X532480 = TILE_ENTITY_TYPES.mekBuilder(CompactBlocks.WIND_GENERATOR_X532480, TileEntityCompressedWindGenerator_x532480::new)
                 .clientTicker(TileEntityMekanism::tickClient)
                 .serverTicker(TileEntityMekanism::tickServer)
                 .withSimple(Capabilities.CONFIG_CARD)

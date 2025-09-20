@@ -4,6 +4,7 @@ import com.CompactMekanismMachines.client.gui.GuiCompactFissionReactor;
 import com.CompactMekanismMachines.client.gui.GuiCompactIndustrialTurbine;
 import com.CompactMekanismMachines.client.gui.GuiCompactThermalEvaporation;
 import com.CompactMekanismMachines.client.render.CompressedWindGenerator.RenderCompressedWindGenerator_x2;
+import com.CompactMekanismMachines.client.render.RenderCompressedWindGenerator;
 import com.CompactMekanismMachines.common.CompactMekanismMachines;
 import com.CompactMekanismMachines.common.registries.CompactBlocks;
 import com.CompactMekanismMachines.common.registries.CompactContainerTypes;
@@ -22,7 +23,11 @@ import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsE
 public class CompactClientRegistration {
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerBlockEntityRenderer(CompactTileEntityTypes.WIND_GENERATOR_X2.get(), RenderCompressedWindGenerator_x2::new);
+        event.registerBlockEntityRenderer(CompactTileEntityTypes.WIND_GENERATOR_X2.get(), RenderCompressedWindGenerator::new);
+        event.registerBlockEntityRenderer(CompactTileEntityTypes.WIND_GENERATOR_X8.get(), RenderCompressedWindGenerator::new);
+        event.registerBlockEntityRenderer(CompactTileEntityTypes.WIND_GENERATOR_X32.get(), RenderCompressedWindGenerator::new);
+        event.registerBlockEntityRenderer(CompactTileEntityTypes.WIND_GENERATOR_X128.get(), RenderCompressedWindGenerator::new);
+        event.registerBlockEntityRenderer(CompactTileEntityTypes.WIND_GENERATOR_X512.get(), RenderCompressedWindGenerator::new);
     }
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
@@ -34,5 +39,9 @@ public class CompactClientRegistration {
     @SubscribeEvent
     public static void registerClientExtensions(RegisterClientExtensionsEvent event) {
         event.registerItem(new RenderPropertiesProvider.MekRenderProperties(RenderWindGeneratorItem.RENDERER), CompactBlocks.WIND_GENERATOR_X2.getItemHolder());
+        event.registerItem(new RenderPropertiesProvider.MekRenderProperties(RenderWindGeneratorItem.RENDERER), CompactBlocks.WIND_GENERATOR_X8.getItemHolder());
+        event.registerItem(new RenderPropertiesProvider.MekRenderProperties(RenderWindGeneratorItem.RENDERER), CompactBlocks.WIND_GENERATOR_X32.getItemHolder());
+        event.registerItem(new RenderPropertiesProvider.MekRenderProperties(RenderWindGeneratorItem.RENDERER), CompactBlocks.WIND_GENERATOR_X128.getItemHolder());
+        event.registerItem(new RenderPropertiesProvider.MekRenderProperties(RenderWindGeneratorItem.RENDERER), CompactBlocks.WIND_GENERATOR_X512.getItemHolder());
     }
 }

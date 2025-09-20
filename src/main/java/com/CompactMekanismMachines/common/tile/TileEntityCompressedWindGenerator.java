@@ -157,4 +157,6 @@ public abstract class TileEntityCompressedWindGenerator<TILE extends TileEntityC
         container.track(SyncableDouble.create(this::getCurrentMultiplier, value -> currentMultiplier = value));
         container.track(SyncableBoolean.create(this::isBlacklistDimension, value -> isBlacklistDimension = value));
     }
+
+    public abstract long getProductionRate();
 }

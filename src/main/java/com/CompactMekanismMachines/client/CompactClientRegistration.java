@@ -1,8 +1,10 @@
 package com.CompactMekanismMachines.client;
 
+import com.CompactMekanismMachines.client.gui.CompressedWindGenerator.*;
 import com.CompactMekanismMachines.client.gui.GuiCompactFissionReactor;
 import com.CompactMekanismMachines.client.gui.GuiCompactIndustrialTurbine;
 import com.CompactMekanismMachines.client.gui.GuiCompactThermalEvaporation;
+import com.CompactMekanismMachines.client.gui.GuiCompressedWindGenerator;
 import com.CompactMekanismMachines.client.render.CompressedWindGenerator.RenderCompressedWindGenerator_x2;
 import com.CompactMekanismMachines.client.render.RenderCompressedWindGenerator;
 import com.CompactMekanismMachines.common.CompactMekanismMachines;
@@ -34,6 +36,19 @@ public class CompactClientRegistration {
         ClientRegistrationUtil.registerScreen(event, CompactContainerTypes.COMPACT_FISSION_REACTOR, GuiCompactFissionReactor::new);
         ClientRegistrationUtil.registerScreen(event, CompactContainerTypes.COMPACT_INDUSTRIAL_TURBINE, GuiCompactIndustrialTurbine::new);
         ClientRegistrationUtil.registerScreen(event, CompactContainerTypes.COMPACT_THERMAL_EVAPORATION, GuiCompactThermalEvaporation::new);
+
+        ClientRegistrationUtil.registerScreen(event,CompactContainerTypes.WIND_GENERATOR_X2, GuiCompressedWindGenerator_x2::new);
+        ClientRegistrationUtil.registerScreen(event,CompactContainerTypes.WIND_GENERATOR_X8, GuiCompressedWindGenerator_x8::new);
+        ClientRegistrationUtil.registerScreen(event,CompactContainerTypes.WIND_GENERATOR_X32, GuiCompressedWindGenerator_x32::new);
+        ClientRegistrationUtil.registerScreen(event,CompactContainerTypes.WIND_GENERATOR_X128, GuiCompressedWindGenerator_x128::new);
+        ClientRegistrationUtil.registerScreen(event,CompactContainerTypes.WIND_GENERATOR_X512, GuiCompressedWindGenerator_x512::new);
+
+//        ClientRegistrationUtil.registerScreen(CompactContainerTypes.WIND_GENERATOR_X2048, GuiCompressedWindGenerator_x2048::new);
+//        ClientRegistrationUtil.registerScreen(CompactContainerTypes.WIND_GENERATOR_X8192, GuiCompressedWindGenerator_x8192::new);
+//        ClientRegistrationUtil.registerScreen(CompactContainerTypes.WIND_GENERATOR_X32768,GuiCompressedWindGenerator_x32768::new);
+//        ClientRegistrationUtil.registerScreen(CompactContainerTypes.WIND_GENERATOR_X131072, GuiCompressedWindGenerator_x131072::new);
+//        ClientRegistrationUtil.registerScreen(CompactContainerTypes.WIND_GENERATOR_X532480, GuiCompressedWindGenerator_x532480::new);
+
     }
 
     @SubscribeEvent

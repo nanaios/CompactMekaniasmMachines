@@ -20,6 +20,7 @@
     }
   },
   "result": {
-    "item": "compactmekanismmachines:compressed_wind_generator_x512"
+    "id": "compactmekanismmachines:compressed_wind_generator_x512",
+    "count": 1
   }
 }

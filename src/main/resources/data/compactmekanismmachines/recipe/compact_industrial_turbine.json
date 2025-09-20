@@ -29,6 +29,7 @@
     }
   },
   "result": {
-    "item": "compactmekanismmachines:compact_industrial_turbine"
+    "id": "compactmekanismmachines:compact_industrial_turbine",
+    "count": 1
   }
 }

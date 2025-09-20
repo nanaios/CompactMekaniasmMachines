@@ -17,6 +17,7 @@
     }
   },
   "result": {
-    "item": "compactmekanismmachines:compact_fission_reactor"
+    "id": "compactmekanismmachines:compact_fission_reactor",
+    "count": 1
   }
 }

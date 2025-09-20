@@ -20,6 +20,7 @@
     }
   },
   "result": {
-    "item": "compactmekanismmachines:compressed_wind_generator_x32768"
+    "id": "compactmekanismmachines:compressed_wind_generator_x32768",
+    "count": 1
   }
 }

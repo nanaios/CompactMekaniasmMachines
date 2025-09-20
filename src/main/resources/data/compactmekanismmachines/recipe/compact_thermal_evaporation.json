@@ -17,6 +17,7 @@
     }
   },
   "result": {
-    "item": "compactmekanismmachines:compact_thermal_evaporation"
+    "id": "compactmekanismmachines:compact_thermal_evaporation",
+    "count": 1
   }
 }

@@ -157,9 +157,4 @@ public abstract class TileEntityCompressedWindGenerator<TILE extends TileEntityC
         container.track(SyncableDouble.create(this::getCurrentMultiplier, value -> currentMultiplier = value));
         container.track(SyncableBoolean.create(this::isBlacklistDimension, value -> isBlacklistDimension = value));
     }
-
-    //Methods relating to IComputerTile
-    long getProductionRate() {
-        return getActive() ? getCurrentGeneration() : 0L;
-    }
 }

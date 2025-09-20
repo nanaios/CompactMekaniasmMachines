@@ -45,12 +45,4 @@ public class CompactTileEntityTypes {
                 .withSimple(Capabilities.CONFIG_CARD)
                 .build();
     }
-
-    public static TileEntityTypeRegistryObject<TileEntityCompressedWindGenerator<?>> registerWindGenerator(){
-        return TILE_ENTITY_TYPES.mekBuilder(CompactBlocks.WIND_GENERATOR_X2, (  pos, state) -> new TileEntityCompressedWindGenerator_x2(pos,state))
-                .clientTicker(TileEntityMekanism::tickClient)
-                .serverTicker(TileEntityMekanism::tickServer)
-                .withSimple(Capabilities.CONFIG_CARD)
-                .build();
-    }
 }

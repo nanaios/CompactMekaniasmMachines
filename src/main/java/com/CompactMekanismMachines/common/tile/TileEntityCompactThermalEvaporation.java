@@ -59,7 +59,6 @@ public class TileEntityCompactThermalEvaporation extends TileEntityConfigurableM
     public BasicFluidTank inputTank;
     @ContainerSync
     public BasicFluidTank outputTank;
-    @ContainerSync
     final FluidInventorySlot inputInputSlot;
     final OutputInventorySlot outputInputSlot;
     final FluidInventorySlot inputOutputSlot;

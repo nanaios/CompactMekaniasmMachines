@@ -6,6 +6,7 @@ import com.CompactMekanismMachines.common.registries.CompactBlocks;
 import mekanism.api.Action;
 import mekanism.api.AutomationType;
 import mekanism.api.IContentsListener;
+import mekanism.api.RelativeSide;
 import mekanism.api.chemical.IChemicalTank;
 import mekanism.api.energy.IEnergyContainer;
 import mekanism.api.fluid.IExtendedFluidTank;
@@ -20,7 +21,14 @@ import mekanism.common.capabilities.holder.fluid.FluidTankHelper;
 import mekanism.common.capabilities.holder.fluid.IFluidTankHolder;
 import mekanism.common.config.MekanismConfig;
 import mekanism.common.inventory.container.sync.dynamic.ContainerSync;
+import mekanism.common.lib.transmitter.TransmissionType;
 import mekanism.common.tile.TileEntityChemicalTank.GasMode;
+import mekanism.common.tile.component.TileComponentEjector;
+import mekanism.common.tile.component.config.ConfigInfo;
+import mekanism.common.tile.component.config.DataType;
+import mekanism.common.tile.component.config.slot.ChemicalSlotInfo;
+import mekanism.common.tile.component.config.slot.EnergySlotInfo;
+import mekanism.common.tile.component.config.slot.FluidSlotInfo;
 import mekanism.common.tile.prefab.TileEntityConfigurableMachine;
 import mekanism.generators.common.config.MekanismGeneratorsConfig;
 import mekanism.generators.common.content.turbine.TurbineValidator;
@@ -53,6 +61,25 @@ public class TileEntityCompactIndustrialTurbine extends TileEntityConfigurableMa
 
     public TileEntityCompactIndustrialTurbine(BlockPos pos, BlockState state) {
         super(CompactBlocks.COMPACT_INDUSTRIAL_TURBINE, pos, state);
+
+        ConfigInfo chemicalConfig = configComponent.getConfig(TransmissionType.CHEMICAL);
+        if (chemicalConfig !=null){
+            chemicalConfig.addSlotInfo(DataType.INPUT, new ChemicalSlotInfo(true,false, chemicalTank));
+            chemicalConfig.setDataType(DataType.INPUT, RelativeSide.FRONT);
+        }
+        ConfigInfo fluidConfig = configComponent.getConfig(TransmissionType.FLUID);
+        if (fluidConfig!=null){
+            fluidConfig.addSlotInfo(DataType.OUTPUT,new FluidSlotInfo(false,true,ventTank));
+            fluidConfig.setDataType(DataType.OUTPUT,RelativeSide.TOP);
+        }
+        ConfigInfo energyConfig = configComponent.getConfig(TransmissionType.ENERGY);
+        if (energyConfig!=null){
+            energyConfig.addSlotInfo(DataType.OUTPUT,new EnergySlotInfo(false,true,energyContainer));
+            energyConfig.setDataType(DataType.OUTPUT,RelativeSide.BOTTOM);
+        }
+
+        ejectorComponent = new TileComponentEjector(this, ()->Long.MAX_VALUE,()->Integer.MAX_VALUE,()-> Long.MAX_VALUE);
+        ejectorComponent.setOutputData(configComponent, TransmissionType.CHEMICAL,TransmissionType.FLUID,TransmissionType.ENERGY);
     }
 
     @Override

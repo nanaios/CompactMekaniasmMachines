@@ -8,6 +8,6 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TileEntityCompressedWindGenerator_x532480 extends TileEntityCompressedWindGenerator<TileEntityCompressedWindGenerator_x532480> {
 
     public TileEntityCompressedWindGenerator_x532480(BlockPos pos, BlockState state) {
-        super(CompactBlocks.WIND_GENERATOR_X512, pos, state, 532480);
+        super(CompactBlocks.WIND_GENERATOR_X532480, pos, state, 532480);
     }
 }
